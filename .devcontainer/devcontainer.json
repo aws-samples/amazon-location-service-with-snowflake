@@ -1,0 +1,48 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.212.0/containers/javascript-node
+{
+  "name": "Node.js",
+  "build": {
+    "dockerfile": "Dockerfile",
+    // Update 'VARIANT' to pick a Node version: 18, 16, 14.
+    // Append -bullseye or -buster to pin to an OS version.
+    // Use -bullseye variants on local arm64/Apple Silicon.
+    "args": {
+      "VARIANT": "18-bullseye"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "git.enableCommitSigning": true
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "firsttris.vscode-jest-runner",
+        "visualstudioexptteam.vscodeintellicode",
+        "amazonwebservices.aws-toolkit-vscode",
+        "GitHub.vscode-pull-request-github",
+        "yzhang.markdown-all-in-one",
+      ]
+    },
+    "codespaces": {
+      "settings": {
+        "git.enableCommitSigning": true
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "firsttris.vscode-jest-runner",
+        "visualstudioexptteam.vscodeintellicode",
+        "amazonwebservices.aws-toolkit-vscode",
+        "GitHub.vscode-pull-request-github",
+        "yzhang.markdown-all-in-one"
+      ]
+    }
+  },
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "npm run setup-dev-environment",
+  // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "node"
+}

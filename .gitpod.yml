@@ -1,0 +1,16 @@
+tasks:
+  - init: |
+      # Install Nodejs version specified in .nvmrc
+      nvm install
+      nvm use
+      # Install repo dependencies
+      npm run setup-dev-environment
+vscode:
+  extensions:
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - firsttris.vscode-jest-runner
+    - visualstudioexptteam.vscodeintellicode
+    - amazonwebservices.aws-toolkit-vscode
+    - GitHub.vscode-pull-request-github
+    - yzhang.markdown-all-in-one

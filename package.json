@@ -1,0 +1,33 @@
+{
+  "name": "amazon-location-service-with-snowflake",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "setup-dev-environment": "npm ci",
+    "deploy": "npm run deploy -w infrastructure -- $(jq -r 'to_entries | map(\"--parameters \\(.key)=\\(.value)\") | .[]' .env)",
+    "destroy": "npm run destroy -w infrastructure"
+  },
+  "keywords": [
+    "aws",
+    "amazon",
+    "location",
+    "service",
+    "snowflake"
+  ],
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "license": "MIT-0",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.0"
+  },
+  "workspaces": [
+    "infrastructure",
+    "functions"
+  ]
+}

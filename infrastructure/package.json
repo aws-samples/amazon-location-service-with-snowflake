@@ -1,0 +1,36 @@
+{
+  "name": "infrastructure",
+  "version": "0.0.1",
+  "bin": {
+    "infrastructure": "bin/location-service-with-snowflake.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --hotswap-fallback --require-approval never",
+    "destroy": "cdk destroy"
+  },
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "license": "MIT-0",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.15.11",
+    "aws-cdk": "^2.72.1",
+    "cdk-nag": "^2.25.2",
+    "esbuild": "^0.17.15",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "~4.9.5"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.72.1",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21"
+  }
+}
