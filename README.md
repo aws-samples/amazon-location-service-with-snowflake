@@ -4,10 +4,14 @@ This repository contains a reference CDK stack that demonstrates how to create a
 
 ## Architecture
 
-TODO: Add architecture diagram here
+![Architecture Diagram](./assets/architecture.png)
 
 The architecture is composed of the following components:
-- TBD
+- A Snowflake database and warehouse
+- An Amazon API Gateway endpoint that proxies request to your AWS account
+- A set of Amazon Location Service place indexes to geocode and reverse geocode addresses
+- A set of AWS AppConfig configurations to store the Amazon Location Service place indexes and the Snowflake database and warehouse names
+- An AWS Secrets Manager secret to store the Snowflake credentials
 
 > **Note**
 > This architecture will create resources that will incur costs. Please refer to the [AWS Pricing](https://aws.amazon.com/pricing/) page for details and ensure you understand the costs before deploying this stack. Additionally, be aware that a trusted relationship is created between the Snowflake account and the AWS account. This means that any user in the Snowflake account will be able to access the AWS account. Please refer to the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/external-functions-creating-aws-planning) for more information and consider consulting your security team before deploying this stack.
@@ -165,7 +169,7 @@ VALUES (1, 13.404954, 52.520008, 'Berlin'),
 4. Use the external functions
 
 ```sql
-SELECT geocode_amazon_location_service_provider_here(LONGITUDE, LATITUDE) AS ADDRESS, LONGITUDE, LATITUDE FROM MY_SCHEMA.COORDINATES;
+SELECT reverse_geocode_amazon_location_service_provider_here(LONGITUDE, LATITUDE) AS ADDRESS, LONGITUDE, LATITUDE FROM MY_SCHEMA.COORDINATES;
 ```
 
 ![Snowflake Dashboard](./assets/query-results.png)
