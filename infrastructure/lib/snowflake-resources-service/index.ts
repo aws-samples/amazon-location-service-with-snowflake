@@ -1,4 +1,6 @@
+import { Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { NagSuppressions } from "cdk-nag";
 import { CustomResource } from "aws-cdk-lib";
 import { Provider } from "aws-cdk-lib/custom-resources";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
@@ -73,6 +75,9 @@ export class SnowflakeResourcesService extends Construct {
 
     this.apiAwsIamUserArn = customResource.getAtt("API_AWS_IAM_USER_ARN");
     this.apiAwsExternalId = customResource.getAtt("API_AWS_EXTERNAL_ID");
+
+    // Add Nag suppressions
+    SnowflakeResourcesService.addNagSuppressions(Stack.of(this));
   }
 
   /**
@@ -89,5 +94,57 @@ export class SnowflakeResourcesService extends Construct {
         .get(functionName)!
         .addEnvironment(key, value);
     }
+  }
+
+  /**
+   * Adds Nag suppressions to the stack, these are justifications for the rules that are being suppressed
+   * intentionally and are not a security risk and/or are not applicable to the solution
+   * @param stack The stack to add the Nag suppressions to
+   */
+  private static addNagSuppressions(stack: Stack) {
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/SnowflakeResourcesService-FunctionResources/GenerateSnoflakeResourcesFn/ServiceRole/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "Intentionally using the managed policy for Lambda execution.",
+        },
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "The wildcard permission applies only to CloudWatch/X-Ray.",
+        },
+      ],
+      true
+    );
+
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      [
+        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource",
+        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/ServiceRole/Resource",
+        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource",
+        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/Resource",
+        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/SnowflakeResourcesService-FunctionResources/GenerateSnoflakeResourcesFn/Resource",
+      ],
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+      ]
+    );
   }
 }

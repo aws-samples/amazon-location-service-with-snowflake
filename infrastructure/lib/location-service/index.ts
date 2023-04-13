@@ -1,4 +1,6 @@
+import { Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { NagSuppressions } from "cdk-nag";
 import type { LocationServiceProps } from "./types";
 
 import { LocationResources } from "./location-resources";
@@ -43,6 +45,9 @@ export class LocationService extends Construct {
     this.locationService.grantSearchActions(
       this.functionService.functions.get(handleSnowflakeFunctionRequestsFnName)!
     );
+
+    // Add Nag suppressions
+    LocationService.addNagSuppressions(Stack.of(this));
   }
 
   /**
@@ -59,5 +64,41 @@ export class LocationService extends Construct {
         .get(functionName)!
         .addEnvironment(key, value);
     }
+  }
+
+  /**
+   * Adds Nag suppressions to the stack, these are justifications for the rules that are being suppressed
+   * intentionally and are not a security risk and/or are not applicable to the solution
+   * @param stack The stack to add the Nag suppressions to
+   */
+  private static addNagSuppressions(stack: Stack) {
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      "LocationServiceWithSnowflakeStack/LocationService/LocationService-FunctionResources/HandleSnowflakeFunctionRequestsFn/ServiceRole/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "Intentionally using the managed policy for Lambda execution.",
+        },
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "The wildcard permission applies only to CloudWatch/X-Ray.",
+        },
+      ],
+      true
+    );
+
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      "LocationServiceWithSnowflakeStack/LocationService/LocationService-FunctionResources/HandleSnowflakeFunctionRequestsFn/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+      ]
+    );
   }
 }

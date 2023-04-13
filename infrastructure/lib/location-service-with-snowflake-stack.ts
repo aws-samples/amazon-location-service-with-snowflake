@@ -1,4 +1,5 @@
 import { Stack, StackProps, CfnParameter } from "aws-cdk-lib";
+import { NagSuppressions } from "cdk-nag";
 import { Construct } from "constructs";
 import { EndpointType } from "aws-cdk-lib/aws-apigateway";
 import { environment } from "./constants";
@@ -213,5 +214,61 @@ export class LocationServiceWithSnowflakeStack extends Stack {
         resources: [snowflakeRole.roleArn],
       }),
     });
+
+    // Add Nag suppressions
+    LocationServiceWithSnowflakeStack.addNagSuppressions(Stack.of(this));
+  }
+
+  /**
+   * Adds Nag suppressions to the stack, these are justifications for the rules that are being suppressed
+   * intentionally and are not a security risk and/or are not applicable to the solution
+   * @param stack The stack to add the Nag suppressions to
+   */
+  private static addNagSuppressions(stack: Stack) {
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      "LocationServiceWithSnowflakeStack/SnowflakeRole/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "The role is replaced/modified before the end of the deployment by a custom resource. The new policy is scoped to a specific pricinpal and implements a condition.",
+        },
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "The role is replaced/modified before the end of the deployment by a custom resource. The new policy is scoped to a specific pricinpal and implements a condition.",
+        },
+      ]
+    );
+
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      [
+        "LocationServiceWithSnowflakeStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource",
+        "LocationServiceWithSnowflakeStack/GrantSnowflakeRoleAssumePermission/CustomResourcePolicy/Resource",
+        "/LocationServiceWithSnowflakeStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource",
+        "LocationServiceWithSnowflakeStack/AWS679f53fac002430cb0da5b7982bd2287/Resource",
+        "LocationServiceWithSnowflakeStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource",
+        "LocationServiceWithSnowflakeStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource",
+      ],
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "This resource is created and managed by CDK and is used only at deployment time.",
+        },
+      ]
+    );
   }
 }

@@ -86,6 +86,7 @@ class SnowflakeClient {
               this.logger.debug("successfully executed statement", {
                 statement: sqlText,
                 numberOfRows: rows?.length,
+                result: rows,
               });
 
               if (!streamResult) {

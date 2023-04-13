@@ -269,18 +269,18 @@ const updateExternalFunctions = async (
  */
 const deleteExternalFunctions = async (): Promise<void> => {
   const externalFunctionStatements = [
-    `DROP FUNCTION IF EXISTS geocode_amazon_location_service_provider_here(FLOAT, FLOAT);`,
-    `DROP FUNCTION IF EXISTS geocode_amazon_location_service_provider_esri(FLOAT, FLOAT);`,
-    `DROP FUNCTION IF EXISTS reverse_geocode_amazon_location_service_provider_here(VARCHAR);`,
-    `DROP FUNCTION IF EXISTS reverse_geocode_amazon_location_service_provider_esri(VARCHAR);`,
+    `DROP FUNCTION IF EXISTS reverse_geocode_amazon_location_service_provider_here(FLOAT, FLOAT);`,
+    `DROP FUNCTION IF EXISTS reverse_geocode_amazon_location_service_provider_esri(FLOAT, FLOAT);`,
+    `DROP FUNCTION IF EXISTS geocode_amazon_location_service_provider_here(VARCHAR);`,
+    `DROP FUNCTION IF EXISTS geocode_amazon_location_service_provider_esri(VARCHAR);`,
   ];
   const awsRegion = getEnvironmentVariableStringValue("AWS_REGION");
   if (awsRegion === "ap-southeast-1") {
     externalFunctionStatements.push(
-      `DROP FUNCTION IF EXISTS geocode_amazon_location_service_provider_grab(FLOAT, FLOAT);`
+      `DROP FUNCTION IF EXISTS reverse_geocode_amazon_location_service_provider_grab(FLOAT, FLOAT);`
     );
     externalFunctionStatements.push(
-      `DROP FUNCTION IF EXISTS reverse_geocode_amazon_location_service_provider_grab(VARCHAR);`
+      `DROP FUNCTION IF EXISTS geocode_amazon_location_service_provider_grab(VARCHAR);`
     );
   }
 
