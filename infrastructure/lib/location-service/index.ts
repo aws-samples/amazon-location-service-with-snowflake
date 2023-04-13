@@ -88,17 +88,5 @@ export class LocationService extends Construct {
       ],
       true
     );
-
-    NagSuppressions.addResourceSuppressionsByPath(
-      stack,
-      "LocationServiceWithSnowflakeStack/LocationService/LocationService-FunctionResources/HandleSnowflakeFunctionRequestsFn/Resource",
-      [
-        {
-          id: "AwsSolutions-L1",
-          reason:
-            "This resource is created and managed by CDK and is used only at deployment time.",
-        },
-      ]
-    );
   }
 }

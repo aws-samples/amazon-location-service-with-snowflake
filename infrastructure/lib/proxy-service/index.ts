@@ -81,10 +81,6 @@ export class ProxyService extends Construct {
       "LocationServiceWithSnowflakeStack/ProxyService/ProxyServiceApi/Default/POST/Resource",
       [
         {
-          id: "AwsSolutions-APIG4",
-          reason: "The API implements IAM authorization.",
-        },
-        {
           id: "AwsSolutions-COG4",
           reason: "The API implements IAM authorization.",
         },

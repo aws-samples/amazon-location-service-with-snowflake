@@ -3,7 +3,7 @@ import { NagSuppressions } from "cdk-nag";
 import { Construct } from "constructs";
 import { EndpointType } from "aws-cdk-lib/aws-apigateway";
 import { environment } from "./constants";
-import { Role, AnyPrincipal } from "aws-cdk-lib/aws-iam";
+import { Role, AccountPrincipal } from "aws-cdk-lib/aws-iam";
 import {
   AwsCustomResource,
   PhysicalResourceId,
@@ -78,7 +78,7 @@ export class LocationServiceWithSnowflakeStack extends Stack {
     // Create an IAM Role with a trust relationship to this account which will be assumed by the Snowflake API integration
     const snowflakeRole = new Role(this, "SnowflakeRole", {
       roleName: `Snowflake-Role-${environment}`,
-      assumedBy: new AnyPrincipal(), // This is overridden by the PrincipalWithConditions below
+      assumedBy: new AccountPrincipal(this.account), // This is overridden by the PrincipalWithConditions below
     });
 
     // Create the Proxy Service, this service contains the AWS API Gateway that will be used to proxy requests from Snowflake
@@ -225,23 +225,6 @@ export class LocationServiceWithSnowflakeStack extends Stack {
    * @param stack The stack to add the Nag suppressions to
    */
   private static addNagSuppressions(stack: Stack) {
-    NagSuppressions.addResourceSuppressionsByPath(
-      stack,
-      "LocationServiceWithSnowflakeStack/SnowflakeRole/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM4",
-          reason:
-            "The role is replaced/modified before the end of the deployment by a custom resource. The new policy is scoped to a specific pricinpal and implements a condition.",
-        },
-        {
-          id: "AwsSolutions-IAM5",
-          reason:
-            "The role is replaced/modified before the end of the deployment by a custom resource. The new policy is scoped to a specific pricinpal and implements a condition.",
-        },
-      ]
-    );
-
     NagSuppressions.addResourceSuppressionsByPath(
       stack,
       [
