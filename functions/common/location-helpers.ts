@@ -74,12 +74,15 @@ const geocodeRows = async (rows: any[], placeIndex: string): Promise<any[]> => {
         new SearchPlaceIndexForTextCommand({
           IndexName: placeIndex,
           Text: address,
+          MaxResults: 1,
         })
       );
       resultRows.push([
         id,
-        res.Results?.[0].Place?.Geometry?.Point?.[0] || -1,
-        res.Results?.[0].Place?.Geometry?.Point?.[1] || -1,
+        JSON.stringify({
+          longitude: res.Results?.[0].Place?.Geometry?.Point?.[0] || -1,
+          latitude: res.Results?.[0].Place?.Geometry?.Point?.[1] || -1,
+        }),
       ]);
     }
     return resultRows;
@@ -107,9 +110,14 @@ const reverseGeocodeRows = async (
         new SearchPlaceIndexForPositionCommand({
           IndexName: placeIndex,
           Position: [longitude, latitude],
+          MaxResults: 1,
         })
       );
-      resultRows.push([id, res.Results?.[0].Place?.Label || "N/A"]);
+      let address = "{}";
+      if (res.Results && res.Results?.length > 0) {
+        address = JSON.stringify(res.Results[0].Place);
+      }
+      resultRows.push([id, address]);
     }
     return resultRows;
   } catch (err) {

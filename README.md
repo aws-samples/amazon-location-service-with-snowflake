@@ -8,7 +8,8 @@ This repository contains a reference CDK stack that demonstrates how to create a
 
 The architecture is composed of the following components:
 - A Snowflake database and warehouse
-- An Amazon API Gateway endpoint that proxies request to your AWS account
+- An Amazon API Gateway endpoint that proxies request to your AWS account and invokes the AWS Lambda function
+- One AWS Lambda functions that create the Snowflake resources
 - A set of Amazon Location Service place indexes to geocode and reverse geocode addresses
 - A set of AWS AppConfig configurations to store the Amazon Location Service place indexes and the Snowflake database and warehouse names
 - An AWS Secrets Manager secret to store the Snowflake credentials
@@ -18,8 +19,108 @@ The architecture is composed of the following components:
 
 ## Geocoding and Reverse Geocoding with Amazon Location Service
 
-TODO: Add description of geocoding and reverse geocoding (**Note to reviewer** - If you are not familiar with these concepts, please refer to the [Amazon Location Service documentation - How it works](https://docs.aws.amazon.com/location/latest/developerguide/how-it-works.html))
-TODO: Explain what functions are available and how to use them (**Note to reviewer** - You can check the `functions/commons/snowflake-helpers.ts` file for the list of functions available)
+### Terminology
+
+**Geocoding** is a process that converts text, such as an address, a region, a business name, or point of interest, into a set of geographic coordinates. You can use place index resources to submit geocoding requests and incorporate data retrieved from geocoding to display data on a map for your web or mobile application.
+
+**Reverse geocoding** is instead a process that converts a set of coordinates into meaningful text, such as an address, a region, a business name, or point of interest. You can use place index resources to submit reverse geocoding requests and incorporate data retrieved from reverse geocoding to display data on a map for your web or mobile application.
+
+To learn more about geocoding and reverse geocoding, refer to the [Amazon Location Service documentation](https://docs.aws.amazon.com/location/latest/developerguide/how-it-works.html).
+
+### External functions available
+
+The stack creates a set of Snowflake external functions that call the Amazon Location Service API. The functions are implemented in JavaScript and are deployed in an AWS Lambda function. The functions are then registered as external functions in Snowflake.
+
+The following external functions are created:
+- `reverse_geocode_amazon_location_service_provider_here(lng FLOAT, lat FLOAT)`: Reverse geocodes a set of coordinates (`longitude`, `latitude`) using the [Amazon Location Service HERE provider](https://docs.aws.amazon.com/location/latest/developerguide/HERE.html)
+- `geocode_amazon_location_service_provider_here(address VARCHAR)`: Geocodes an address using the [Amazon Location Service HERE provider](https://docs.aws.amazon.com/location/latest/developerguide/HERE.html)
+- `reverse_geocode_amazon_location_service_provider_esri(lng FLOAT, lat FLOAT)`: Reverse geocodes a set of coordinates (`longitude`, `latitude`) using the [Amazon Location Service Esri provider](https://docs.aws.amazon.com/location/latest/developerguide/esri.html)
+- `geocode_amazon_location_service_provider_esri(address VARCHAR)`: Geocodes an address using the [Amazon Location Service Esri provider](https://docs.aws.amazon.com/location/latest/developerguide/esri.html)
+- `reverse_geocode_amazon_location_service_provider_grab(lng FLOAT, lat FLOAT)`: Reverse geocodes a set of coordinates (`longitude`, `latitude`) using the [Amazon Location Service Grab provider](https://docs.aws.amazon.com/location/latest/developerguide/grab.html) - **Note**: This function is only available when deploying the stack in the `ap-southeast-1` (Singapore) region
+- `geocode_amazon_location_service_provider_grab(address VARCHAR)`: Geocodes an address using the [Amazon Location Service Grab provider](https://docs.aws.amazon.com/location/latest/developerguide/grab.html) - **Note**: This function is only available when deploying the stack in the `ap-southeast-1` (Singapore) region
+
+All the functions return a [`VARIANT` type](https://docs.snowflake.com/en/sql-reference/data-types-semistructured#variant) that contains the JSON response from the Amazon Location Service API.
+
+### How to use the external functions
+
+#### Reverse Geocoding
+
+To reverse geocode a set of coordinates, you can use the `reverse_geocode_amazon_location_service_provider_here(lng FLOAT, lat FLOAT)` function, or any of the other functions that use a different provider.
+
+For instance, to reverse geocode the coordinates `13.404954,52.520008` (Berlin, Germany), you can use the following query:
+
+```sql
+SELECT reverse_geocode_amazon_location_service_provider_esri(13.404954, 52.520008) AS RAW_RESPONSE;
+```
+
+The result of this query is a JSON string:
+
+| RAW_RESPONSE                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "{\"Country\":\"DEU\",\"Geometry\":{\"Point\":[13.404963148341725,52.52001976137106]},\"Interpolated\":false,\"Label\":\"Spandauer Straße, 10178, Berlin, Mitte, Berlin, DEU\",\"Municipality\":\"Berlin\",\"PostalCode\":\"10178\",\"Region\":\"Berlin\",\"SubRegion\":\"Berlin\"}" |
+
+![Reverse Geocode Raw](./assets/reverse_geocode_raw.png)
+
+If you want to access a specific field from the response, you can use the `GET` function in combination with the `PARSE_JSON` function. For instance, to get the `Country`, `Municipality`, and `Label` fields from the response, you can use the following query:
+
+```sql
+SELECT 
+  GET(PARSE_JSON(reverse_geocode_amazon_location_service_provider_esri(13.404954, 52.520008)), 'Country') AS COUNTRY,
+  GET(PARSE_JSON(reverse_geocode_amazon_location_service_provider_esri(13.404954, 52.520008)), 'Municipality') AS MUNICIPALITY,
+  GET(PARSE_JSON(reverse_geocode_amazon_location_service_provider_esri(13.404954, 52.520008)), 'Label') AS LABEL
+```
+
+which returns the following result:
+
+| COUNTRY | MUNICIPALITY | LABEL                                               |
+| ------- | ------------ | --------------------------------------------------- |
+| DEU     | Berlin       | Spandauer Straße, 10178, Berlin, Mitte, Berlin, DEU |
+
+![Reverse Geocode Parsed](./assets/reverse_geocode_parsed.png)
+
+For a full list of the fields returned by the Amazon Location Service API, refer to the [Amazon Location Service API Reference](https://docs.aws.amazon.com/location/latest/APIReference/API_SearchPlaceIndexForPosition.html#API_SearchPlaceIndexForPosition_ResponseSyntax).
+
+#### Geocoding
+
+To geocode an address, you can use the `geocode_amazon_location_service_provider_here(address VARCHAR)` function, or any of the other functions that use a different provider.
+
+For instance, to geocode the address `1600 Pennsylvania Ave NW, Washington, DC 20500, USA`, you can use the following query:
+
+```sql
+SELECT geocode_amazon_location_service_provider_esri('1600 Pennsylvania Ave NW, Washington, DC 20500, USA') AS RAW_RESPONSE;
+```
+
+The result of this query is a JSON string:
+
+| RAW_RESPONSE
+| ------------------------------------------------------------------------------------------------------------------------------
+| "{\"longitude\":-77.03654699820865,\"latitude\":38.89767510765125}"
+
+![Geocode Raw](./assets/reverse_geocode_raw.png)
+
+If you want to access a specific field from the response, you can use the `GET` function in combination with the `PARSE_JSON` function. For instance, to get the `longitude` and `latitude` fields from the response, you can use the following query:
+
+```sql
+SELECT 
+  GET(PARSE_JSON(geocode_amazon_location_service_provider_esri('1600 Pennsylvania Ave NW, Washington, DC 20500, USA')), 'longitude') AS LONGITUDE,
+  GET(PARSE_JSON(geocode_amazon_location_service_provider_esri('1600 Pennsylvania Ave NW, Washington, DC 20500, USA')), 'latitude') AS LATITUDE;
+```
+
+which returns the following result:
+
+| LONGITUDE          | LATITUDE          |
+| ------------------ | ----------------- |
+| -77.03654699820865 | 38.89767510765125 |
+
+![Geocode Parsed](./assets/reverse_geocode_parsed.png)
+
+For a full list of the fields returned by the Amazon Location Service API, refer to the [Amazon Location Service API Reference](https://docs.aws.amazon.com/location/latest/APIReference/API_SearchPlaceIndexForText.html#API_SearchPlaceIndexForText_ResponseSyntax).
+
+### How to customize the external functions
+
+The external functions are defined in the `functions/common/snowflake-helpers.ts` file. You can customize the functions by changing the code in this file and re-deploying the stack.
+
+Likewise, if you want to customize the integration with the Amazon Location Service API, you can change the implementation of the `geocodeRows` and `reverseGeocodeRows` functions in the `functions/common/location-helpers.ts` file and re-deploy the stack.
 
 ## Getting Started
 
@@ -49,7 +150,10 @@ CREATE WAREHOUSE MY_WAREHOUSE
   INITIALLY_SUSPENDED = TRUE;
 ```
 
-2. Create a database and schema
+> **Note**
+> Some of the parameters used in the `CREATE WAREHOUSE` statement like `MAX_CLUSTER_*` require a [Snowflake license](https://www.snowflake.com/pricing/). If you are using a trial account, you can remove these parameters from the statement.
+
+1. Create a database and schema
 
 ```sql
 USE WAREHOUSE MY_WAREHOUSE;
@@ -89,6 +193,9 @@ If you simply follow the instructions in this guide, you should not exceed the d
 
 ### Deployment
 
+> **Note**
+> Before deploying the stack, make sure to review the Amazon Location Service FAQs [here](https://aws.amazon.com/location/faqs/#General) to make sure that the service is available in your region.
+
 1. Clone this repository
 
 ```bash
@@ -106,9 +213,10 @@ npm ci
 
 In this step, you will deploy the CDK stack to your AWS account. In order to do so, you will need to provide the following parameters:
 - `AccountUserPassSecretNameParam` - The name of the AWS Secrets Manager secret that you created in the previous section
-- `ApiIntegrationNameParam` - The name of the Snowflake API integration that will be created by the stack
+- `ApiIntegrationNameParam` - The name of the Snowflake API integration that will be created by the stack, this name must be unique across your Snowflake account
 - `SnowflakeWarehouseParam` - The name of the Snowflake warehouse that you created in the previous section
 - `SnowflakeDatabaseParam` - The name of the Snowflake database that you created in the previous section
+- `SnowflakeSchemaParam` - The name of the Snowflake schema that you created in the previous section
 
 ```bash
 cd infrastructure
@@ -153,6 +261,8 @@ CREATE OR REPLACE TABLE MY_SCHEMA.COORDINATES (
 1. Insert some sample data
 
 ```sql
+USE WAREHOUSE MY_WAREHOUSE;
+USE DATABASE MY_DATABASE;
 INSERT INTO MY_SCHEMA.COORDINATES (ID, LONGITUDE, LATITUDE, CONTROL)
 VALUES (1, 13.404954, 52.520008, 'Berlin'),
        (2, 2.352222, 48.856614, 'Paris'),
@@ -169,7 +279,12 @@ VALUES (1, 13.404954, 52.520008, 'Berlin'),
 4. Use the external functions
 
 ```sql
-SELECT reverse_geocode_amazon_location_service_provider_here(LONGITUDE, LATITUDE) AS ADDRESS, LONGITUDE, LATITUDE FROM MY_SCHEMA.COORDINATES;
+USE WAREHOUSE MY_WAREHOUSE;
+USE DATABASE MY_DATABASE;
+SELECT 
+    GET(PARSE_JSON(MY_SCHEMA.reverse_geocode_amazon_location_service_provider_esri(LONGITUDE, LATITUDE)), 'Label') AS LABEL,
+    CONTROL
+FROM MY_SCHEMA.COORDINATES;
 ```
 
 ![Snowflake Dashboard](./assets/query-results.png)

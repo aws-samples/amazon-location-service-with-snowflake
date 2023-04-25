@@ -104,13 +104,8 @@ export class SnowflakeResourcesService extends Construct {
   private static addNagSuppressions(stack: Stack) {
     NagSuppressions.addResourceSuppressionsByPath(
       stack,
-      "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/SnowflakeResourcesService-FunctionResources/GenerateSnoflakeResourcesFn/ServiceRole/Resource",
+      "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/SnowflakeResourcesService-FunctionResources/GenerateSnowflakeResourcesRole/Resource",
       [
-        {
-          id: "AwsSolutions-IAM4",
-          reason:
-            "Intentionally using the managed policy for Lambda execution.",
-        },
         {
           id: "AwsSolutions-IAM5",
           reason: "The wildcard permission applies only to CloudWatch/X-Ray.",

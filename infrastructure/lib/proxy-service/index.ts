@@ -11,6 +11,9 @@ import {
   EndpointType,
   AuthorizationType,
   LambdaIntegration,
+  RequestValidator,
+  JsonSchemaType,
+  Model,
 } from "aws-cdk-lib/aws-apigateway";
 import { environment } from "../constants";
 import type {
@@ -44,7 +47,8 @@ export class ProxyService extends Construct {
             actions: ["execute-api:Invoke"],
             principals: [
               new ArnPrincipal(
-                `arn:aws:iam::${Stack.of(this).account
+                `arn:aws:iam::${
+                  Stack.of(this).account
                 }:assumed-role/${snowflakeRoleName}/snowflake`
               ),
             ],
@@ -71,6 +75,28 @@ export class ProxyService extends Construct {
       {
         authorizationType: AuthorizationType.IAM,
         ...options.methodOptions,
+        requestValidator: new RequestValidator(this, "RequestValidator", {
+          restApi: this.api,
+          validateRequestBody: true,
+          validateRequestParameters: false,
+        }),
+        requestModels: {
+          "application/json": new Model(this, "Model", {
+            restApi: this.api,
+            contentType: "application/json",
+            modelName: "SnowflakeRequest",
+            schema: {
+              type: JsonSchemaType.OBJECT,
+              properties: {
+                data: {
+                  type: JsonSchemaType.ARRAY,
+                  minItems: 1,
+                },
+              },
+              required: ["data"],
+            },
+          }),
+        },
       }
     );
 
@@ -98,8 +124,7 @@ export class ProxyService extends Construct {
       [
         {
           id: "AwsSolutions-APIG2",
-          reason:
-            "Request validation is done in the Lambda function, this is because we use one Lambda function for multiple Snowflake functions",
+          reason: "Request validation is applied to the method",
         },
       ]
     );
@@ -111,7 +136,7 @@ export class ProxyService extends Construct {
         {
           id: "AwsSolutions-APIG3",
           reason:
-            "Usage of a WAF has intentionally been omitted for this solution",
+            "Usage of a WAF has intentionally been omitted for this solution, customers can add their own WAF if they wish to do so",
         },
         {
           id: "AwsSolutions-APIG6",

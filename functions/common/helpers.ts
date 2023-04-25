@@ -19,8 +19,8 @@ const checkData = (
   if (!data) {
     return false;
   }
-  for (const property of properties) {
-    if (!data[property]) {
+  for (const property of Object.keys(properties)) {
+    if (!Object(data).hasOwnProperty(property)) {
       return false;
     }
   }

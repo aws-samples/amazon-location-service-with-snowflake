@@ -74,12 +74,7 @@ const deleteApiIntegration = async (integrationName: string): Promise<any> => {
 const updateApiIntegration = async (
   options: CreateOrUpdateApiIntegration
 ): Promise<void> => {
-  const {
-    integrationName,
-    apiAwsRoleArn,
-    apiAllowedPrefix,
-    physicalResourceId,
-  } = options;
+  const { integrationName, physicalResourceId } = options;
   logger.info("updating api integration", { details: integrationName });
   try {
     // If the integration name has changed, delete the old integration and create a new one
@@ -93,14 +88,6 @@ const updateApiIntegration = async (
       logger.info("api integration updated");
       return;
     }
-    /* // Otherwise, just update the existing integration
-    await snowflakeClient.executeStatement(
-      `ALTER API INTEGRATION ${integrationName}
-    api_aws_role_arn = '${apiAwsRoleArn}'
-    api_allowed_prefixes = ('${apiAllowedPrefix}')
-    enabled = true`,
-      false
-    ); */
   } catch (err) {
     logger.error("error updating api integration", { err });
     throw err;

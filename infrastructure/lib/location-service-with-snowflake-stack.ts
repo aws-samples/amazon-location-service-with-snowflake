@@ -109,19 +109,14 @@ export class LocationServiceWithSnowflakeStack extends Stack {
       configService.appconfig.deployments.get(placeIndexesConfigProfileName)!
     );
     // Add the AppConfig configuration profile info and the secret's name to the function's environment variables
+    const { applicationId, environmentId, configurationProfileId } =
+      configService.appconfig.deployments.get(placeIndexesConfigProfileName)!;
     locationService.addToFunctionEnvironmentVariables(
       handleSnowflakeFunctionRequestsFnName,
       {
-        APPCONFIG_APPLICATION_ID: configService.appconfig.deployments.get(
-          placeIndexesConfigProfileName
-        )!.applicationId,
-        APPCONFIG_ENVIRONMENT_ID: configService.appconfig.deployments.get(
-          placeIndexesConfigProfileName
-        )!.environmentId,
-        APPCONFIG_CONFIGURATION_PROFILE_ID:
-          configService.appconfig.deployments.get(
-            placeIndexesConfigProfileName
-          )!.configurationProfileId,
+        APPCONFIG_APPLICATION_ID: applicationId,
+        APPCONFIG_ENVIRONMENT_ID: environmentId,
+        APPCONFIG_CONFIGURATION_PROFILE_ID: configurationProfileId,
       }
     );
 
@@ -215,7 +210,8 @@ export class LocationServiceWithSnowflakeStack extends Stack {
       }),
     });
 
-    // Add Nag suppressions
+    // Add Nag suppressions, these are justifications for the rules that are being suppressed intentionally and are not a
+    // security risk and/or are not applicable to the solution. Learn more about Nag here: https://github.com/cdklabs/cdk-nag
     LocationServiceWithSnowflakeStack.addNagSuppressions(Stack.of(this));
   }
 

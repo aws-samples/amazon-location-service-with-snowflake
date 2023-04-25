@@ -1,6 +1,7 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { injectLambdaContext } from "@aws-lambda-powertools/logger";
-import { logger } from "./common/powertools";
+import { captureLambdaHandler } from "@aws-lambda-powertools/tracer";
+import { logger, tracer } from "./common/powertools";
 import {
   getRowsFromBody,
   getSnowflakeFunctionNameFromHeaders,
@@ -27,12 +28,11 @@ import middy from "@middy/core";
  * The function then calls the appropriate geocoding or reverse geocoding function
  * with the list of rows and the data provider selected.
  *
- * The function uses the @middy/core library to wrap the handler with a middleware
- * that injects the Lambda context into the logger. This allows the logger to
- * include the Lambda request ID, as well as other function info in the log output.
+ * The function uses the @middy/core library to wrap the handler with middleware
+ * that inject the Lambda context into the logger and creates X-Ray segments.
  *
  * Learn more about the @middy/core library [here](https://middy.js.org),
- * and about Powertools logger [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/).
+ * and about Powertools [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/).
  *
  * @param event The API Gateway event
  */
@@ -83,8 +83,14 @@ export const handler = middy(async (event: APIGatewayProxyEvent) => {
       }),
     };
   }
-}).use(
-  injectLambdaContext(logger, {
-    logEvent: process.env.ENVIRONMENT !== "prod",
-  })
-);
+})
+  .use(
+    captureLambdaHandler(tracer, {
+      captureResponse: false, // The response might contain PII or be too large, so we don't capture it in the X-Ray segments
+    })
+  )
+  .use(
+    injectLambdaContext(logger, {
+      logEvent: process.env.ENVIRONMENT !== "prod",
+    })
+  );
