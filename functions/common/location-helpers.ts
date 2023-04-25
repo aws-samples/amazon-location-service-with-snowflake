@@ -4,7 +4,6 @@ import {
   SearchPlaceIndexForTextCommand,
 } from "@aws-sdk/client-location";
 import { getPlaceIndexes } from "./helpers";
-import type { PlaceIndexes } from "./helpers";
 import { logger } from "./powertools";
 
 const locationClient = new LocationClient({});

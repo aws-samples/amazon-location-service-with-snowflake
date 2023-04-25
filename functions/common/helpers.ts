@@ -7,6 +7,27 @@ import { getSecret } from "@aws-lambda-powertools/parameters/secrets";
 import { getAppConfig } from "@aws-lambda-powertools/parameters/appconfig";
 
 /**
+ * Checks if the data has all of the properties specified.
+ * @param data The data to check
+ * @param properties The properties to check for
+ * @returns `true` if the data has all of the properties, `false` otherwise
+ */
+const checkData = (
+  data: Record<string, unknown> | undefined,
+  properties: string[]
+): boolean => {
+  if (!data) {
+    return false;
+  }
+  for (const property of properties) {
+    if (!data[property]) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
  * Gets the value of an environment variable, throwing an error if it is not set
  * @param name The name of the environment variable
  * @returns The value of the environment variable
@@ -46,10 +67,7 @@ const getValuesFromEventProperties = (
   const properties = event.ResourceProperties;
 
   if (
-    !properties ||
-    !properties.integrationName ||
-    !properties.apiAwsRoleArn ||
-    !properties.apiBaseUrl
+    checkData(properties, ["integrationName", "apiAwsRoleArn", "apiBaseUrl"])
   ) {
     logger.error("missing properties in CloudFormation event", { event });
     throw new Error("missing properties in CloudFormation event");
@@ -85,24 +103,22 @@ type SnowflakeAccountInfo = {
  * @returns The information required to connect to Snowflake
  */
 const getSnowflakeAccountInfo = async (): Promise<SnowflakeAccountInfo> => {
-  logger.info("Getting Secrets Manager secret");
+  logger.debug("getting Secrets Manager secret");
   try {
     const accountInfo = (await getSecret(
       getEnvironmentVariableStringValue("SECRET_NAME"),
       { transform: "json" }
     )) as Record<string, unknown> | undefined;
-    if (
-      !accountInfo?.account ||
-      !accountInfo?.username ||
-      !accountInfo?.password
-    ) {
+    if (checkData(accountInfo, ["account", "username", "password"])) {
       logger.error("missing account info in Secrets Manager secret", {
-        details: accountInfo,
+        details: accountInfo
+          ? Object.keys(accountInfo)
+          : "no account info returned",
       });
       throw new Error("missing account info in Secrets Manager secret");
     }
 
-    logger.info("got Secrets Manager secret");
+    logger.debug("got Secrets Manager secret");
 
     return accountInfo as SnowflakeAccountInfo;
   } catch (err) {
@@ -147,14 +163,16 @@ const getSnowflakeWarehouseConfig =
         transform: "json",
       })) as Record<string, unknown> | undefined;
 
-      if (!databaseInfo?.warehouse || !databaseInfo?.database) {
+      if (checkData(databaseInfo, ["warehouse", "database"])) {
         logger.error("missing database info in AppConfig", {
-          details: databaseInfo,
+          details: databaseInfo
+            ? Object.keys(databaseInfo)
+            : "no database info returned",
         });
         throw new Error("Missing database info in AppConfig");
       }
 
-      logger.debug("got appConfig configuration", { details: databaseInfo });
+      logger.debug("got appConfig configuration");
 
       return databaseInfo as SnowflakeWarehouseConfig;
     } catch (err) {
@@ -203,14 +221,14 @@ const getPlaceIndexes = async (): Promise<PlaceIndexes> => {
       maxAge: 900,
     })) as Record<string, unknown> | undefined;
 
-    if (!placeIndexes?.Esri || !placeIndexes?.Here) {
+    if (checkData(placeIndexes, ["Esri", "Here"])) {
       logger.error("missing place indexes in AppConfig", {
         details: placeIndexes,
       });
       throw new Error("missing place indexes in AppConfig");
     }
 
-    logger.debug("got appConfig configuration", { details: placeIndexes });
+    logger.debug("got appConfig configuration");
 
     return placeIndexes as PlaceIndexes;
   } catch (err) {
@@ -250,6 +268,12 @@ const getRowsFromBody = (
   }
 };
 
+/**
+ * Gets the name of the Snowflake function to call from the request headers.
+ * If the headers are invalid, returns an error.
+ * @param headers The request headers
+ * @returns The name of the Snowflake function to call, or an error
+ */
 const getSnowflakeFunctionNameFromHeaders = (
   headers: APIGatewayProxyEventHeaders
 ): GenericRequestOutputWithOptionalError => {

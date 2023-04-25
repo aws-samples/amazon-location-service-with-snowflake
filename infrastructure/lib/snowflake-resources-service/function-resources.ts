@@ -35,7 +35,7 @@ export class FunctionResources extends Construct {
     // Function that generates the Snowflake resources
     const generateSnowflakeResourcesFn = new NodejsFunction(
       this,
-      "GenerateSnoflakeResourcesFn",
+      "GenerateSnowflakeResourcesFn",
       {
         ...commonFunctionSettings,
         entry: "../functions/generateSnowflakeResources.ts",

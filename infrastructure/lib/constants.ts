@@ -23,8 +23,8 @@ export const commonFunctionSettings: Partial<FunctionProps> = {
 };
 
 export const commonBundlingSettings: Partial<BundlingOptions> = {
-  minify: process.env.NODE_ENV === "production" ? true : false,
-  sourceMap: process.env.NODE_ENV === "production" ? false : true,
+  minify: process.env.NODE_ENV === "production",
+  sourceMap: process.env.NODE_ENV !== "production",
   externalModules: [],
 };
 

@@ -27,6 +27,13 @@ import middy from "@middy/core";
  * The function then calls the appropriate geocoding or reverse geocoding function
  * with the list of rows and the data provider selected.
  *
+ * The function uses the @middy/core library to wrap the handler with a middleware
+ * that injects the Lambda context into the logger. This allows the logger to
+ * include the Lambda request ID, as well as other function info in the log output.
+ *
+ * Learn more about the @middy/core library [here](https://middy.js.org),
+ * and about Powertools logger [here](https://awslabs.github.io/aws-lambda-powertools-typescript/latest/core/logger/).
+ *
  * @param event The API Gateway event
  */
 export const handler = middy(async (event: APIGatewayProxyEvent) => {
@@ -55,22 +62,15 @@ export const handler = middy(async (event: APIGatewayProxyEvent) => {
     const dataProvider = await getPlaceIndexFromFunctionName(
       snowflakeFunctionName
     );
+    const data =
+      operation === "reverseGeocode"
+        ? await reverseGeocodeRows(rows, dataProvider)
+        : await geocodeRows(rows, dataProvider);
 
-    if (operation === "reverseGeocode") {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          data: await reverseGeocodeRows(rows, dataProvider),
-        }),
-      };
-    } else {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          data: await geocodeRows(rows, dataProvider),
-        }),
-      };
-    }
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ data }),
+    };
   } catch (err) {
     const message =
       err instanceof Error
@@ -85,6 +85,6 @@ export const handler = middy(async (event: APIGatewayProxyEvent) => {
   }
 }).use(
   injectLambdaContext(logger, {
-    logEvent: process.env.ENVIRONMENT === "prod" ? false : true,
+    logEvent: process.env.ENVIRONMENT !== "prod",
   })
 );

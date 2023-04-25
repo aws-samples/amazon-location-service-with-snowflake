@@ -11,7 +11,6 @@ import {
   EndpointType,
   AuthorizationType,
   LambdaIntegration,
-  MethodLoggingLevel,
 } from "aws-cdk-lib/aws-apigateway";
 import { environment } from "../constants";
 import type {
@@ -45,8 +44,7 @@ export class ProxyService extends Construct {
             actions: ["execute-api:Invoke"],
             principals: [
               new ArnPrincipal(
-                `arn:aws:iam::${
-                  Stack.of(this).account
+                `arn:aws:iam::${Stack.of(this).account
                 }:assumed-role/${snowflakeRoleName}/snowflake`
               ),
             ],

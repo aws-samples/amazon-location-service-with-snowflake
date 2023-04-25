@@ -32,7 +32,9 @@ export class LocationResources extends Construct {
     super(scope, id);
 
     // Create Place Indexes for each data provider currently Generally Available in the
-    // AWS Region where the stack is deployed
+    // AWS Region where the stack is deployed. Currently the `Grab` data provider is only
+    // available in the `ap-southeast-1` region,
+    // see https://docs.aws.amazon.com/location/latest/developerguide/grab.html#grab-coverage-area
     const dataProviders = ["Esri", "Here"];
     if (Stack.of(this).region === "ap-southeast-1") {
       dataProviders.push("Grab");

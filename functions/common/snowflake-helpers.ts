@@ -29,7 +29,7 @@ const createApiIntegration = async (
   options: Omit<CreateOrUpdateApiIntegration, "physicalResourceId">
 ): Promise<void> => {
   const { integrationName, apiAwsRoleArn, apiAllowedPrefix } = options;
-  logger.info("creating api integration...");
+  logger.info("creating api integration");
   try {
     await snowflakeClient.executeStatement(
       `CREATE OR REPLACE API INTEGRATION ${integrationName}
@@ -80,7 +80,7 @@ const updateApiIntegration = async (
     apiAllowedPrefix,
     physicalResourceId,
   } = options;
-  logger.info("updating api integration...", { details: integrationName });
+  logger.info("updating api integration", { details: integrationName });
   try {
     // If the integration name has changed, delete the old integration and create a new one
     if (physicalResourceId !== integrationName) {
@@ -129,7 +129,7 @@ interface DescribeApiIntegrationOutput {
 const describeApiIntegration = async (
   integrationName: string
 ): Promise<DescribeApiIntegrationOutput> => {
-  logger.info("describing api integration...", { details: integrationName });
+  logger.info("describing api integration", { details: integrationName });
 
   try {
     const res = await snowflakeClient.executeStatement(

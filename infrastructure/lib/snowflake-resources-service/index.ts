@@ -126,7 +126,7 @@ export class SnowflakeResourcesService extends Construct {
         "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/ServiceRole/Resource",
         "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource",
         "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/Snowflake-Resource-Provider/framework-onEvent/Resource",
-        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/SnowflakeResourcesService-FunctionResources/GenerateSnoflakeResourcesFn/Resource",
+        "LocationServiceWithSnowflakeStack/SnowflakeResourcesService/SnowflakeResourcesService-FunctionResources/GenerateSnowflakeResourcesFn/Resource",
       ],
       [
         {
