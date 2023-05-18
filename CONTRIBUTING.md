@@ -58,12 +58,10 @@ In order to contribute to this project you will need Node.js 16.x or later - ins
 
 Clone the repository and install dependencies:
 
-TODO: fill in the repo url
-
 ```bash
-git clone
+git clone git@github.com:aws-samples/amazon-location-service-with-snowflake.git
 cd
-npm install
+npm ci
 ```
 
 ### Deploying
