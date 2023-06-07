@@ -1,6 +1,6 @@
 # Amazon Location Service with Snowflake
 
-This repository contains a reference CDK stack that demonstrates how to create an integration between [Amazon Location Service](https://aws.amazon.com/location/) and [Snowflake](https://www.snowflake.com/). The integration is implemented using a set of custom [Snowflake external functions](https://docs.snowflake.com/en/sql-reference/external-functions-introduction.html) that call the [Amazon Location Service API](https://docs.aws.amazon.com/location/latest/developerguide/what-is.html) via a [Snowflake API integration](https://docs.snowflake.com/en/user-guide/api-integration-intro.html) proxied through [AWS API Gateway](https://aws.amazon.com/api-gateway/).
+This repository contains a quick start architecture that demonstrates how to create an integration between [Amazon Location Service](https://aws.amazon.com/location/) and [Snowflake](https://www.snowflake.com/). The integration is implemented using a set of custom [Snowflake external functions](https://docs.snowflake.com/en/sql-reference/external-functions-introduction.html) that call the [Amazon Location Service API](https://docs.aws.amazon.com/location/latest/developerguide/what-is.html) via a [Snowflake API integration](https://docs.snowflake.com/en/user-guide/api-integration-intro.html) proxied through [AWS API Gateway](https://aws.amazon.com/api-gateway/).
 
 ## Architecture
 
@@ -131,6 +131,9 @@ In order to deploy this stack, you will need the following:
 - A [Snowflake](https://www.snowflake.com/) account (sign up for a free trial [here](https://signup.snowflake.com/))
 - An AWS account (create one [here](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/))
 - Node.js 16.x or later install [here](https://nodejs.org/en/download/) or via [nvm]([http](https://github.com/nvm-sh/nvm))/[fnm](https://github.com/Schniz/fnm)
+
+> **Note**
+> Would you like to deploy this stack using Terraform? If so, please consider adding a :+1: to [this issue](https://github.com/aws-samples/amazon-location-service-with-snowflake/issues/5) and/or leaving a comment with your use case.
 
 ### Prepare the Snowflake environment
 
