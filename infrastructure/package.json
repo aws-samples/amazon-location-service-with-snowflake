@@ -19,14 +19,14 @@
   "license": "MIT-0",
   "devDependencies": {
     "@types/node": "^20.5.7",
-    "aws-cdk": "^2.93.0",
+    "aws-cdk": "^2.145.0",
     "cdk-nag": "^2.27.115",
     "esbuild": "^0.19.2",
     "ts-node": "^10.9.1",
     "typescript": "~5.2.2"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.93.0",
+    "aws-cdk-lib": "^2.145.0",
     "constructs": "^10.2.69",
     "source-map-support": "^0.5.21"
   }
