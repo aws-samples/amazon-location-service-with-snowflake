@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { injectLambdaContext } from "@aws-lambda-powertools/logger";
-import { captureLambdaHandler } from "@aws-lambda-powertools/tracer";
+import { injectLambdaContext } from "@aws-lambda-powertools/logger/middleware";
+import { captureLambdaHandler } from "@aws-lambda-powertools/tracer/middleware";
 import { logger, tracer } from "./common/powertools";
 import {
   getRowsFromBody,

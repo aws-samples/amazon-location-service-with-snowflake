@@ -26,6 +26,11 @@ export const commonBundlingSettings: Partial<BundlingOptions> = {
   minify: process.env.NODE_ENV === "production",
   sourceMap: process.env.NODE_ENV !== "production",
   externalModules: [],
+  mainFields: ['module', 'main'],
+  platform: 'node',
+  esbuildArgs: {
+    '--packages': 'bundle',
+  },
 };
 
 export const commonEnvVars = {
