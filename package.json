@@ -23,7 +23,7 @@
     "node": ">=16"
   },
   "devDependencies": {
-    "husky": "^8.0.3",
+    "husky": "^9.1.4",
     "lint-staged": "^14.0.1"
   },
   "workspaces": [
